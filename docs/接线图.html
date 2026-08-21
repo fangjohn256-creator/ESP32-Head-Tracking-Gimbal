@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 二轴头追云台 · 接线图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    background: #f5f6f8; color: #1f2329; padding: 24px;
+  }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #1e5d34, #2e8b57);
+    color: #fff; border-radius: 14px; padding: 20px 28px; margin-bottom: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  }
+  .header h1 { font-size: 22px; margin-bottom: 6px; }
+  .header p { font-size: 14px; opacity: .92; line-height: 1.6; }
+  .card {
+    background: #fff; border-radius: 14px; padding: 20px 24px; margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .card h2 { font-size: 17px; margin-bottom: 12px; padding-left: 10px; border-left: 4px solid #2e8b57; }
+  .wiring-svg { width: 100%; height: auto; display: block; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #e3e6ea; padding: 8px 10px; text-align: left; }
+  th { background: #f0f4f1; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .red { background: #e0352e; } .black { background: #333; } .orange { background: #f09000; }
+  .blue { background: #1f6feb; } .purple { background: #8a2be2; } .green { background: #2e8b57; }
+  .tips { font-size: 14px; line-height: 1.9; }
+  .tips li { margin-bottom: 8px; }
+  .warn { background: #fff7e6; border: 1px solid #ffd591; border-radius: 10px; padding: 12px 16px; margin-top: 10px; }
+  .cmd {
+    background: #1f2430; color: #7ee787; border-radius: 8px; padding: 10px 14px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; margin: 6px 0;
+    overflow-x: auto; white-space: pre;
+  }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 8px; }
+  .tag-ok { background: #e6f7ec; color: #1d7a43; }
+  .tag-note { background: #eef2ff; color: #3b5bdb; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>🎥 ESP32 二轴头追云台 · 接线图</h1>
+    <p>MPU6050 姿态传感器 + 两个 SG90 舵机 + ESP32-CH340C 开发板<br>
+    原理一句话：<b>你手里 MPU6050 怎么动，右边两个舵机组成的云台就怎么跟。</b></p>
+  </div>
+
+  <div class="card">
+    <h2>一、接线总览（图可放大）</h2>
+    <svg class="wiring-svg" viewBox="0 0 1240 800" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#555"/>
+        </marker>
+      </defs>
+
+      <!-- ============ 背景 ============ -->
+      <rect x="0" y="0" width="1240" height="800" fill="#ffffff"/>
+
+      <!-- ============ 连线（先画，垫底） ============ -->
+      <!-- MPU6050 四根线 -->
+      <!-- 3V3 红线 -->
+      <path d="M 62,260 L 300,260 L 300,190 L 478,190" fill="none" stroke="#e0352e" stroke-width="3"/>
+      <circle cx="478" cy="190" r="5" fill="#e0352e"/>
+      <!-- GND 黑线 -->
+      <path d="M 62,320 L 340,320 L 340,215 L 478,215" fill="none" stroke="#333" stroke-width="3"/>
+      <circle cx="478" cy="215" r="5" fill="#333"/>
+      <!-- SDA 紫线 -->
+      <path d="M 62,380 L 380,380 L 380,265 L 478,265" fill="none" stroke="#8a2be2" stroke-width="3"/>
+      <circle cx="478" cy="265" r="5" fill="#8a2be2"/>
+      <!-- SCL 蓝线 -->
+      <path d="M 62,440 L 420,440 L 420,240 L 478,240" fill="none" stroke="#1f6feb" stroke-width="3"/>
+      <circle cx="478" cy="240" r="5" fill="#1f6feb"/>
+
+      <!-- 舵机1 三根线 -->
+      <!-- 信号 橙 GPIO13 -->
+      <path d="M 378,400 L 600,400 L 600,372 L 929,372" fill="none" stroke="#f09000" stroke-width="3"/>
+      <circle cx="929" cy="372" r="5" fill="#f09000"/>
+      <!-- 5V 红线：主线 + 分支 -->
+      <path d="M 378,280 L 620,280 L 620,628 L 922,628" fill="none" stroke="#e0352e" stroke-width="3"/>
+      <path d="M 620,392 L 929,392" fill="none" stroke="#e0352e" stroke-width="3"/>
+      <circle cx="620" cy="392" r="4" fill="#fff" stroke="#e0352e" stroke-width="2"/>
+      <circle cx="929" cy="392" r="5" fill="#e0352e"/>
+      <!-- GND 黑线：主线 + 分支 -->
+      <path d="M 378,340 L 580,340 L 580,640 L 939,640" fill="none" stroke="#333" stroke-width="3"/>
+      <path d="M 580,412 L 929,412" fill="none" stroke="#333" stroke-width="3"/>
+      <circle cx="580" cy="412" r="4" fill="#fff" stroke="#333" stroke-width="2"/>
+      <circle cx="929" cy="412" r="5" fill="#333"/>
+      <!-- 舵机2 信号 橙 GPIO14 -->
+      <path d="M 378,460 L 660,460 L 660,616 L 905,616" fill="none" stroke="#f09000" stroke-width="3"/>
+      <circle cx="905" cy="616" r="5" fill="#f09000"/>
+      <!-- 舵机2 电源端点 -->
+      <circle cx="922" cy="628" r="5" fill="#e0352e"/>
+      <circle cx="939" cy="640" r="5" fill="#333"/>
+
+      <!-- 线标签 -->
+      <g font-size="12" font-weight="bold">
+        <text x="150" y="252" fill="#e0352e">3V3</text>
+        <text x="150" y="312" fill="#333">GND</text>
+        <text x="170" y="374" fill="#8a2be2">SDA</text>
+        <text x="190" y="434" fill="#1f6feb">SCL</text>
+        <text x="430" y="272" fill="#e0352e">5V</text>
+        <text x="430" y="334" fill="#333">GND</text>
+        <text x="455" y="394" fill="#f09000">GPIO13 信号</text>
+        <text x="455" y="454" fill="#f09000">GPIO14 信号</text>
+        <text x="640" y="340" fill="#e0352e">5V 分支(并联)</text>
+        <text x="640" y="400" fill="#333">GND 分支(并联)</text>
+        <text x="940" y="364" fill="#f09000">橙·信号</text>
+        <text x="940" y="386" fill="#e0352e">红·5V</text>
+        <text x="940" y="406" fill="#333">棕·GND</text>
+      </g>
+
+      <!-- ============ ESP32 开发板 ============ -->
+      <g>
+        <rect x="70" y="230" width="300" height="420" rx="12" fill="#1d4a2e" stroke="#0d3a1f" stroke-width="2"/>
+        <!-- USB 口 -->
+        <rect x="185" y="214" width="70" height="24" rx="4" fill="#6b7280" stroke="#4b5563"/>
+        <text x="220" y="231" font-size="11" fill="#fff" text-anchor="middle">USB</text>
+        <!-- ESP32 芯片 -->
+        <rect x="105" y="300" width="130" height="58" rx="6" fill="#0d2f1b" stroke="#1a6b3a"/>
+        <text x="170" y="325" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">ESP32</text>
+        <text x="170" y="344" font-size="11" fill="#9fe0b0" text-anchor="middle">双核 240MHz</text>
+        <!-- CH340 芯片 -->
+        <rect x="260" y="300" width="84" height="42" rx="6" fill="#0d2f1b" stroke="#1a6b3a"/>
+        <text x="302" y="326" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">CH340</text>
+        <!-- 板名 -->
+        <text x="220" y="270" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">ESP32-CH340C 开发板</text>
+        <!-- 3.3V 稳压区 -->
+        <text x="220" y="610" font-size="11" fill="#9fe0b0" text-anchor="middle">板载 3.3V 稳压 / USB 5V</text>
+        <!-- 左排针 -->
+        <g font-size="12" fill="#fff">
+          <line x1="70" y1="260" x2="66" y2="260" stroke="#fff" stroke-width="3"/><circle cx="62" cy="260" r="5" fill="#f5f5f5"/>
+          <line x1="70" y1="320" x2="66" y2="320" stroke="#fff" stroke-width="3"/><circle cx="62" cy="320" r="5" fill="#f5f5f5"/>
+          <line x1="70" y1="380" x2="66" y2="380" stroke="#fff" stroke-width="3"/><circle cx="62" cy="380" r="5" fill="#f5f5f5"/>
+          <line x1="70" y1="440" x2="66" y2="440" stroke="#fff" stroke-width="3"/><circle cx="62" cy="440" r="5" fill="#f5f5f5"/>
+        </g>
+        <!-- 右排针 -->
+        <g font-size="12" fill="#fff">
+          <line x1="370" y1="280" x2="374" y2="280" stroke="#fff" stroke-width="3"/><circle cx="378" cy="280" r="5" fill="#f5f5f5"/>
+          <line x1="370" y1="340" x2="374" y2="340" stroke="#fff" stroke-width="3"/><circle cx="378" cy="340" r="5" fill="#f5f5f5"/>
+          <line x1="370" y1="400" x2="374" y2="400" stroke="#fff" stroke-width="3"/><circle cx="378" cy="400" r="5" fill="#f5f5f5"/>
+          <line x1="370" y1="460" x2="374" y2="460" stroke="#fff" stroke-width="3"/><circle cx="378" cy="460" r="5" fill="#f5f5f5"/>
+        </g>
+        <!-- 引脚名 -->
+        <g font-size="13" font-weight="bold">
+          <text x="56" y="263" fill="#ffb3b3" text-anchor="end">3V3</text>
+          <text x="56" y="323" fill="#ddd" text-anchor="end">GND</text>
+          <text x="56" y="383" fill="#c9a5ff" text-anchor="end">GPIO21 SDA</text>
+          <text x="56" y="443" fill="#a5c8ff" text-anchor="end">GPIO22 SCL</text>
+          <text x="384" y="283" fill="#ffb3b3">5V</text>
+          <text x="384" y="343" fill="#ddd">GND</text>
+          <text x="384" y="403" fill="#ffc46b">GPIO13</text>
+          <text x="384" y="463" fill="#ffc46b">GPIO14</text>
+        </g>
+        <!-- 区域说明 -->
+        <text x="20" y="530" font-size="12" fill="#9fe0b0">← 接 MPU6050</text>
+        <text x="390" y="530" font-size="12" fill="#9fe0b0">接舵机 →</text>
+      </g>
+
+      <!-- ============ MPU6050 模块 ============ -->
+      <g>
+        <rect x="480" y="170" width="210" height="110" rx="8" fill="#f5ead6" stroke="#d8c9a3" stroke-width="2"/>
+        <rect x="540" y="192" width="90" height="48" rx="5" fill="#3a3a3a"/>
+        <text x="585" y="215" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">MPU-6050</text>
+        <text x="585" y="231" font-size="10" fill="#aaa" text-anchor="middle">六轴姿态传感器</text>
+        <!-- 左侧引脚 -->
+        <g font-size="12">
+          <circle cx="476" cy="190" r="5" fill="#f5ead6" stroke="#d8c9a3" stroke-width="2"/>
+          <circle cx="476" cy="215" r="5" fill="#f5ead6" stroke="#d8c9a3" stroke-width="2"/>
+          <circle cx="476" cy="240" r="5" fill="#f5ead6" stroke="#d8c9a3" stroke-width="2"/>
+          <circle cx="476" cy="265" r="5" fill="#f5ead6" stroke="#d8c9a3" stroke-width="2"/>
+          <text x="492" y="194" fill="#1f2329">VCC</text>
+          <text x="492" y="219" fill="#1f2329">GND</text>
+          <text x="492" y="244" fill="#1f2329">SCL</text>
+          <text x="492" y="269" fill="#1f2329">SDA</text>
+        </g>
+        <!-- 右侧不用的脚 -->
+        <g font-size="10" fill="#888">
+          <circle cx="694" cy="190" r="4" fill="#f5ead6" stroke="#d8c9a3"/>
+          <circle cx="694" cy="215" r="4" fill="#f5ead6" stroke="#d8c9a3"/>
+          <circle cx="694" cy="240" r="4" fill="#f5ead6" stroke="#d8c9a3"/>
+          <text x="652" y="193" text-anchor="end">XDA XCL AD0</text>
+          <text x="652" y="243" text-anchor="end">不用接</text>
+        </g>
+        <!-- 手持示意 -->
+        <text x="585" y="340" font-size="48" text-anchor="middle">✋</text>
+        <text x="585" y="375" font-size="13" fill="#555" text-anchor="middle">你拿在手里，手怎么动它怎么动</text>
+        <text x="585" y="393" font-size="12" fill="#8a8f98" text-anchor="middle">点头→pitch 歪头→roll 转手→yaw</text>
+      </g>
+
+      <!-- ============ 舵机云台 ============ -->
+      <g>
+        <!-- 底座支架 -->
+        <rect x="880" y="700" width="200" height="18" rx="5" fill="#9aa0a6"/>
+        <text x="980" y="737" font-size="11" fill="#666" text-anchor="middle">固定底座（云台安装面）</text>
+
+        <!-- 舵机2 底座（横放，管左右转/偏航） -->
+        <rect x="900" y="520" width="160" height="90" rx="10" fill="#e05252" stroke="#b23a3a" stroke-width="2"/>
+        <rect x="905" y="612" width="22" height="30" rx="3" fill="#b23a3a"/>
+        <rect x="1033" y="612" width="22" height="30" rx="3" fill="#b23a3a"/>
+        <!-- 轴 -->
+        <circle cx="980" cy="520" r="20" fill="#f0f0f0" stroke="#999" stroke-width="2"/>
+        <circle cx="980" cy="520" r="6" fill="#666"/>
+        <line x1="964" y1="520" x2="996" y2="520" stroke="#666" stroke-width="3"/>
+        <line x1="980" y1="504" x2="980" y2="536" stroke="#666" stroke-width="3"/>
+        <text x="980" y="506" font-size="12" fill="#fff" text-anchor="middle">舵机2</text>
+        <text x="980" y="596" font-size="12" fill="#fff" text-anchor="middle">偏航 · 底座（左右转）</text>
+        <!-- 偏航旋转弧线 -->
+        <path d="M 1060,470 A 60 60 0 0 1 1060,560" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+        <text x="1080" y="520" font-size="12" fill="#555">← 偏航</text>
+
+        <!-- 舵机1 上臂（竖立，管上下/俯仰） -->
+        <rect x="935" y="360" width="100" height="150" rx="10" fill="#e05252" stroke="#b23a3a" stroke-width="2"/>
+        <rect x="915" y="352" width="20" height="38" rx="3" fill="#b23a3a"/>
+        <rect x="1035" y="352" width="20" height="38" rx="3" fill="#b23a3a"/>
+        <!-- 轴（朝左） -->
+        <circle cx="935" cy="430" r="18" fill="#f0f0f0" stroke="#999" stroke-width="2"/>
+        <circle cx="935" cy="430" r="5" fill="#666"/>
+        <line x1="921" y1="430" x2="949" y2="430" stroke="#666" stroke-width="3"/>
+        <text x="985" y="420" font-size="12" fill="#fff" text-anchor="middle">舵机1</text>
+        <text x="985" y="470" font-size="12" fill="#fff" text-anchor="middle">俯仰 · 上臂</text>
+        <!-- 俯仰旋转弧线 -->
+        <path d="M 880,395 A 55 55 0 0 0 880,465" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+        <text x="840" y="435" font-size="12" fill="#555">俯仰 ↑↓</text>
+
+        <!-- 云台托盘 -->
+        <rect x="860" y="330" width="150" height="16" rx="5" fill="#8b949e"/>
+        <text x="935" y="320" font-size="12" fill="#444" text-anchor="middle">云台托盘（放摄像头/小物件）</text>
+        <!-- 舵机2 顶部的舵盘 -->
+        <rect x="955" y="505" width="50" height="10" rx="3" fill="#cfd4da"/>
+
+        <!-- 舵机1 三线引出说明 -->
+        <g font-size="11" fill="#444">
+          <text x="870" y="300" font-weight="bold">舵机1 三根线：</text>
+          <text x="870" y="316">橙=信号(接GPIO13)</text>
+          <text x="870" y="330">红=5V　棕=GND</text>
+        </g>
+      </g>
+
+      <!-- ============ 图例 ============ -->
+      <g transform="translate(30, 745)">
+        <rect x="0" y="0" width="1180" height="44" rx="8" fill="#f0f4f1" stroke="#dbe4dd"/>
+        <text x="16" y="28" font-size="13" font-weight="bold" fill="#1f2329">图例：</text>
+        <line x1="80" y1="22" x2="130" y2="22" stroke="#e0352e" stroke-width="4"/><text x="138" y="27" font-size="12" fill="#444">5V 电源</text>
+        <line x1="230" y1="22" x2="280" y2="22" stroke="#333" stroke-width="4"/><text x="288" y="27" font-size="12" fill="#444">GND 地线</text>
+        <line x1="380" y1="22" x2="430" y2="22" stroke="#f09000" stroke-width="4"/><text x="438" y="27" font-size="12" fill="#444">舵机信号</text>
+        <line x1="540" y1="22" x2="590" y2="22" stroke="#1f6feb" stroke-width="4"/><text x="598" y="27" font-size="12" fill="#444">I2C 时钟 SCL</text>
+        <line x1="700" y1="22" x2="750" y2="22" stroke="#8a2be2" stroke-width="4"/><text x="758" y="27" font-size="12" fill="#444">I2C 数据 SDA</text>
+        <text x="900" y="27" font-size="12" fill="#666">✱ 交叉线不连通，接线以端点圆点为准</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="card">
+    <h2>二、引脚速查表</h2>
+    <table>
+      <tr><th>器件</th><th>引脚</th><th>接到 ESP32</th><th>线色</th><th>说明</th></tr>
+      <tr><td rowspan="4">MPU6050<br>(六轴传感器)</td><td>VCC</td><td>3V3</td><td><span class="dot red"></span>红</td><td>供电 <b>只能 3.3V</b>，接 5V 会烧</td></tr>
+      <tr><td>GND</td><td>GND</td><td><span class="dot black"></span>黑</td><td>共地</td></tr>
+      <tr><td>SCL</td><td>GPIO22</td><td><span class="dot blue"></span>蓝</td><td>I2C 时钟</td></tr>
+      <tr><td>SDA</td><td>GPIO21</td><td><span class="dot purple"></span>紫</td><td>I2C 数据</td></tr>
+      <tr><td rowspan="3">舵机1<br>(俯仰/上臂)</td><td>棕</td><td>GND</td><td><span class="dot black"></span>黑</td><td>地线（SG90 标准线序：棕=地）</td></tr>
+      <tr><td>红</td><td>5V</td><td><span class="dot red"></span>红</td><td>电源（与舵机2 并联）</td></tr>
+      <tr><td>橙</td><td>GPIO13</td><td><span class="dot orange"></span>橙</td><td>信号线（PWM）</td></tr>
+      <tr><td rowspan="3">舵机2<br>(偏航/底座)</td><td>棕</td><td>GND</td><td><span class="dot black"></span>黑</td><td>地线</td></tr>
+      <tr><td>红</td><td>5V</td><td><span class="dot red"></span>红</td><td>电源（与舵机1 并联）</td></tr>
+      <tr><td>橙</td><td>GPIO14</td><td><span class="dot orange"></span>橙</td><td>信号线（PWM）</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>三、注意事项（新手必看）</h2>
+    <ul class="tips">
+      <li><b>MPU6050 只接 3.3V</b>，千万别接到 5V，一接就冒烟。</li>
+      <li><b>舵机接 5V</b>（板上 VIN/5V 引脚，或 USB 口的 5V）。测试阶段两个舵机轻负载，USB 供电基本够用。</li>
+      <li>如果云台转不动、舵机嗡嗡叫（堵转），或 ESP32 反复重启 → 说明电流不够，给舵机<b>单独外接 5V 2A 电源</b>，电源 GND 必须和 ESP32 的 GND 接到一起（共地），否则信号乱套。</li>
+      <li>SG90 三根线：<span class="dot black"></span><b>棕=地</b>、<span class="dot red"></span><b>红=5V</b>、<span class="dot orange"></span><b>橙=信号</b>，别插反。</li>
+      <li>舵机信号线（橙）只插 GPIO 数字脚，别插到电源脚。</li>
+      <li>插拔舵机线前先断电（拔 USB），带电插容易烧 GPIO。</li>
+      <li>机械上：两个舵机要<b>叠放固定</b>成 L 型——舵机2 当底座（轴朝上），舵机1 立在上面（轴朝前），才组成二轴云台。</li>
+    </ul>
+    <div class="warn">⚠️ <b>最容易踩的坑：</b>只把舵机红黑线接 ESP32 的 5V/GND，两个舵机同时大幅动作时 USB 口电流不够，板子会黑屏重启。测试没事就先用着，正式用强烈建议外接电源。</div>
+  </div>
+
+  <div class="card">
+    <h2>四、烧录与调试</h2>
+    <p style="font-size:14px;margin-bottom:8px">代码已在 <b>C:\Users\33568\Desktop\work good工作\ESP32二轴云台</b> 准备好。烧录命令：</p>
+    <div class="cmd">cd "C:\Users\33568\Desktop\work good工作\ESP32二轴云台"
+platformio run -t upload --upload-port COM3</div>
+    <p style="font-size:14px;margin:10px 0 8px">看传感器实时角度（确认手的方向对不对）：</p>
+    <div class="cmd">platformio device monitor -p COM3 -b 115200</div>
+    <p style="font-size:14px;margin-top:10px">如果发现<b>左右转不跟手</b>或<b>方向反了</b>，打开 <code>src/main.cpp</code> 顶部改 4 行配置（哪根舵机跟哪个角、要不要反向），改完重新烧录即可，不用动其它代码。</p>
+  </div>
+
+  <p style="text-align:center;font-size:12px;color:#999;margin-top:6px">ESP32 二轴头追云台 · 接线图 v1.0</p>
+</div>
+</body>
+</html>
